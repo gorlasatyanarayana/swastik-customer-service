@@ -1,6 +1,7 @@
 package com.swastik.service.customer.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,20 @@ public class CustomerServiceImpl implements CustomerService{
 	@Override
 	public CustomerLoginResponse login(CustomerLoginDto request) {
 		// TODO Auto-generated method stub
-		return null;
+		CustomerLoginResponse response = null;
+		log.info("[Login] entered {} ",request);
+		log.info("[Login] registering new customer");
+		Optional<CustomerMastEntity> user  = customerMastRepository.findByEmailAndPassword(request.getEmail(), request.getPassword());
+		if(user.isPresent()) {
+			log.info("[Login] user is found");
+			CustomerMastEntity customerMastEntity = user.get();
+			response = CustomerLoginResponse.builder().success(true).customerId(customerMastEntity.getId().toString()).build();
+		} else {
+			log.info("[Login] user not found");
+			response = CustomerLoginResponse.builder().success(false).build();
+		}
+		
+		return response;
 	}
 
 }
