@@ -7,11 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.swastik.service.customer.dto.CustomerLoginDto;
 import com.swastik.service.customer.dto.CustomerLoginResponse;
+import com.swastik.service.customer.dto.CustomerLogoutDto;
+import com.swastik.service.customer.dto.CustomerLogoutResponse;
 import com.swastik.service.customer.dto.CustomerRegistrationDto;
 import com.swastik.service.customer.dto.CustomerRegistrationResponse;
 import com.swastik.service.customer.service.CustomerService;
@@ -37,6 +40,21 @@ public class CustomerController {
 	public ResponseEntity<?> login(@PathVariable("version") String version, @RequestBody CustomerLoginDto request){
 		log.info("Entered in method-login of class-CustomerController");
 		CustomerLoginResponse response = customerService.login(request);
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping(value = "/{version}/customer/logout")
+	public ResponseEntity<?> logout(@PathVariable("version") String version, @RequestHeader("Authorization") String token ,@RequestBody CustomerLogoutDto request){
+		log.info("Entered in method-logout of class-CustomerController");
+		
+		log.info("Token : {}",token);
+		
+
+        String[] tokenArray = token.split(" ");
+        String tokenS = tokenArray[1];
+    
+		
+		CustomerLogoutResponse response = customerService.logout(request, tokenS);
 		return ResponseEntity.ok(response);
 	}
 

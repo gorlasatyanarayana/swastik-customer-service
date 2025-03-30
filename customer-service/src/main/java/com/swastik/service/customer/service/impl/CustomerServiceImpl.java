@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.swastik.service.customer.dto.CustomerLoginDto;
 import com.swastik.service.customer.dto.CustomerLoginResponse;
+import com.swastik.service.customer.dto.CustomerLogoutDto;
+import com.swastik.service.customer.dto.CustomerLogoutResponse;
 import com.swastik.service.customer.dto.CustomerRegistrationDto;
 import com.swastik.service.customer.dto.CustomerRegistrationResponse;
 import com.swastik.service.customer.entity.CustomerMastEntity;
@@ -18,6 +20,8 @@ import com.swastik.service.customer.entity.CustomerSessionEntity;
 import com.swastik.service.customer.repository.CustomerMastRepository;
 import com.swastik.service.customer.repository.CustomerSessionRepository;
 import com.swastik.service.customer.service.CustomerService;
+
+import jakarta.persistence.Column;
 
 @Service
 public class CustomerServiceImpl implements CustomerService{
@@ -97,6 +101,39 @@ public class CustomerServiceImpl implements CustomerService{
 		}
 		
 		return response;
+	}
+
+	@Override
+	public CustomerLogoutResponse logout(CustomerLogoutDto request, String token) {
+
+		// TODO Auto-generated method stub
+		CustomerLogoutResponse response = null;
+		log.info("[Logout] entered {} ",request);
+		log.info("[Logout] finding the existing token");
+		
+		Optional<CustomerSessionEntity> customerSession  = customerSessionRepository.findByCustIdAndToken(UUID.fromString(request.getCustomerId()), token);
+		if(customerSession.isPresent()) {
+			log.info("[Logout] user is found");
+			CustomerSessionEntity customerSessionEntity = customerSession.get();
+			
+			log.info("[Logout] Invalidating the token");
+			
+			customerSessionEntity.setIsActive(false);       
+			
+			customerSessionRepository.save(customerSessionEntity);
+			
+			log.info("[Logout] Logout  is successful");
+			response = CustomerLogoutResponse.builder().success(true).
+					customerId(customerSessionEntity.getId().toString()).					
+					build();
+			
+		} else {
+			log.info("[Logout] user not found");
+			response = CustomerLogoutResponse.builder().success(false).build();
+		}
+		
+		return response;
+	
 	}
 
 }
