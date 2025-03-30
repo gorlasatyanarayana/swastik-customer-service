@@ -2,6 +2,7 @@ package com.swastik.service.customer.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,9 @@ import com.swastik.service.customer.dto.CustomerLoginResponse;
 import com.swastik.service.customer.dto.CustomerRegistrationDto;
 import com.swastik.service.customer.dto.CustomerRegistrationResponse;
 import com.swastik.service.customer.entity.CustomerMastEntity;
+import com.swastik.service.customer.entity.CustomerSessionEntity;
 import com.swastik.service.customer.repository.CustomerMastRepository;
+import com.swastik.service.customer.repository.CustomerSessionRepository;
 import com.swastik.service.customer.service.CustomerService;
 
 @Service
@@ -23,6 +26,9 @@ public class CustomerServiceImpl implements CustomerService{
 	
 	@Autowired
 	CustomerMastRepository customerMastRepository;
+	
+	@Autowired
+	CustomerSessionRepository customerSessionRepository;
 	
 	@Override
 	public CustomerRegistrationResponse register(CustomerRegistrationDto request) {
@@ -62,12 +68,29 @@ public class CustomerServiceImpl implements CustomerService{
 		// TODO Auto-generated method stub
 		CustomerLoginResponse response = null;
 		log.info("[Login] entered {} ",request);
-		log.info("[Login] registering new customer");
+		log.info("[Login] finding the existing  customer");
 		Optional<CustomerMastEntity> user  = customerMastRepository.findByEmailAndPassword(request.getEmail(), request.getPassword());
 		if(user.isPresent()) {
 			log.info("[Login] user is found");
 			CustomerMastEntity customerMastEntity = user.get();
-			response = CustomerLoginResponse.builder().success(true).customerId(customerMastEntity.getId().toString()).build();
+			
+			log.info("[Login] creating the token");
+			
+			UUID uuid = UUID.randomUUID();
+	        String uuidAsString = uuid.toString();
+	        
+			CustomerSessionEntity customerSessionEntity = new CustomerSessionEntity();
+			customerSessionEntity.setCustId(customerMastEntity.getId());
+			customerSessionEntity.setIsActive(true);
+			customerSessionEntity.setToken(uuidAsString);
+			customerSessionRepository.save(customerSessionEntity);
+			
+			log.info("[Login] token  is created");
+			response = CustomerLoginResponse.builder().success(true).
+					customerId(customerMastEntity.getId().toString()).
+					token(uuidAsString).
+					build();
+			
 		} else {
 			log.info("[Login] user not found");
 			response = CustomerLoginResponse.builder().success(false).build();
