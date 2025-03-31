@@ -10,6 +10,7 @@ import com.swastik.service.customer.entity.CustomerSessionEntity;
 public interface CustomerSessionRepository extends JpaRepository<CustomerSessionEntity, UUID>{
 	
 	Optional<CustomerSessionEntity> findByCustIdAndToken(UUID custId, String token);
+	Optional<CustomerSessionEntity> findByToken(String token);
 	
 
 }

@@ -111,7 +111,10 @@ public class CustomerServiceImpl implements CustomerService{
 		log.info("[Logout] entered {} ",request);
 		log.info("[Logout] finding the existing token");
 		
-		Optional<CustomerSessionEntity> customerSession  = customerSessionRepository.findByCustIdAndToken(UUID.fromString(request.getCustomerId()), token);
+	    String[] tokenArray = token.split(" ");
+        String tokenS = tokenArray[1];
+		
+		Optional<CustomerSessionEntity> customerSession  = customerSessionRepository.findByCustIdAndToken(UUID.fromString(request.getCustomerId()), tokenS);
 		if(customerSession.isPresent()) {
 			log.info("[Logout] user is found");
 			CustomerSessionEntity customerSessionEntity = customerSession.get();

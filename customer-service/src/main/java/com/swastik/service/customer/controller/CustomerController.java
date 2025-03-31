@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import com.swastik.service.customer.dto.CustomerLogoutResponse;
 import com.swastik.service.customer.dto.CustomerRegistrationDto;
 import com.swastik.service.customer.dto.CustomerRegistrationResponse;
 import com.swastik.service.customer.service.CustomerService;
+import com.swastik.service.customer.service.TokenService;
 
 
 @RestController
@@ -28,6 +30,9 @@ public class CustomerController {
 	
 	@Autowired
 	CustomerService customerService;
+	
+	@Autowired
+	TokenService tokenService;
 	
 	@PostMapping(value = "/{version}/customer/register")
 	public ResponseEntity<?> register(@PathVariable("version") String version, @RequestBody CustomerRegistrationDto request){
@@ -43,18 +48,30 @@ public class CustomerController {
 		return ResponseEntity.ok(response);
 	}
 	
+	@GetMapping("/{version}/customer/validate-token")
+    public ResponseEntity<?> validate(@RequestHeader("Authorization") String token){
+        log.info("Received request to validate token: {}", token);
+        if(tokenService.validateToken(token))
+        {
+            log.info("Token is valid: {}", token);
+            return ResponseEntity.ok("Valid");
+        }
+        else
+        {
+            log.info("Token is invalid: {}", token);
+            return ResponseEntity.ok("Invalid");
+        }
+    }
+	
 	@PostMapping(value = "/{version}/customer/logout")
 	public ResponseEntity<?> logout(@PathVariable("version") String version, @RequestHeader("Authorization") String token ,@RequestBody CustomerLogoutDto request){
 		log.info("Entered in method-logout of class-CustomerController");
 		
 		log.info("Token : {}",token);
 		
-
-        String[] tokenArray = token.split(" ");
-        String tokenS = tokenArray[1];
-    
+   
 		
-		CustomerLogoutResponse response = customerService.logout(request, tokenS);
+		CustomerLogoutResponse response = customerService.logout(request, token);
 		return ResponseEntity.ok(response);
 	}
 
